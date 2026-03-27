@@ -1,0 +1,146 @@
+= Microsoft Entra ID OAuth2 Resource
+
+ifdef::env-github[]
+image:https://img.shields.io/static/v1?label=Available%20at&message=Gravitee.io&color=1EC9D2["Gravitee.io", link="https://download.gravitee.io/#graviteeio-apim/plugins/resources/gravitee-resource-oauth2-provider-entra-id/"]
+image:https://img.shields.io/badge/License-Apache%202.0-blue.svg["License", link="https://github.com/gravitee-io/gravitee-resource-oauth2-provider-entra-id/blob/master/LICENSE.txt"]
+image:https://img.shields.io/badge/semantic--release-conventional%20commits-e10079?logo=semantic-release["Releases", link="https://github.com/gravitee-io/gravitee-resource-oauth2-provider-entra-id/releases"]
+image:https://circleci.com/gh/gravitee-io/gravitee-resource-oauth2-provider-entra-id.svg?style=svg["CircleCI", link="https://circleci.com/gh/gravitee-io/gravitee-resource-oauth2-provider-entra-id"]
+image:https://f.hubspotusercontent40.net/hubfs/7600448/gravitee-github-button.jpg["Join the community forum", link="https://community.gravitee.io?utm_source=readme", height=20]
+endif::[]
+
+== Description
+
+Microsoft Entra ID (formerly Azure Active Directory) OAuth2 resource validates access tokens issued by
+Microsoft Entra ID using local JWT verification.
+
+Unlike generic OAuth2 resources that rely on a remote introspection endpoint (RFC 7662), Entra ID
+access tokens are JWTs that can be validated locally.
+This resource fetches the tenant's public signing keys from the JWKS endpoint
+(`https://login.microsoftonline.com/{tenantId}/discovery/v2.0/keys`) and verifies the token
+signature, expiry, audience, issuer, and tenant ID entirely within Gravitee — no outbound call is
+made per request.
+
+Both Entra ID v1.0 and v2.0 token formats are supported.
+
+== Compatibility with APIM
+
+|===
+|Plugin version | APIM version
+
+|1.0 and upper  | 4.10.x to latest
+|===
+
+== Configuration
+
+You can configure the resource with the following options:
+
+|===
+|Property |Required |Description |Type |Default |Supports EL
+
+.^|tenantId
+^.^|X
+|The Microsoft Entra ID tenant ID (also called Directory ID). Found in the Azure portal under
+Azure Active Directory > Properties.
+^.^|string
+^.^|-
+^.^|X
+
+.^|audience
+^.^|X
+|Expected audience (`aud` claim) for incoming access tokens. In Entra ID this is the Application
+ID URI (e.g. `api://{clientId}`) or the client ID of your resource application. Validating the
+audience prevents token confusion attacks.
+^.^|string
+^.^|-
+^.^|X
+
+.^|userClaim
+^.^|-
+|Claim field used to identify the end user in analytics logs. Use `oid` (Object ID) for a stable
+tenant-wide identifier, or `sub` for a per-application identifier.
+^.^|string
+^.^|oid
+^.^|X
+
+|===
+
+=== HTTP, Proxy and SSL
+
+The `http`, `proxy`, and `ssl` sections accept the standard Gravitee HTTP client options and are
+used when fetching the JWKS endpoint and the UserInfo endpoint.
+
+== How it works
+
+=== Token introspection
+
+When `introspect()` is called:
+
+1. The token is parsed as a signed JWT. Non-JWT strings are immediately rejected.
+2. The key ID (`kid`) from the JWT header is used to look up the matching public key in the
+   cached JWKS. The JWKS is refreshed automatically when the cache is stale (TTL: 1 hour) or
+   when the referenced key ID is not found (key rotation support).
+3. The signature is verified with the public key.
+4. Standard claims are validated: `exp`, `nbf`, `aud` (must equal the configured audience),
+   `iss` (derived from the tenant ID and token version), and `tid` (must equal the configured
+   tenant ID).
+5. On success, a payload is returned in RFC 7662 style with `"active": true` plus all JWT claims.
+   Timestamps (`iat`, `exp`, `nbf`) are normalised to Unix seconds.
+
+=== UserInfo
+
+The `userInfo()` method calls the Entra ID UserInfo endpoint
+(`https://login.microsoftonline.com/{tenantId}/openid/userinfo`) with the supplied access token
+as a Bearer token.
+
+== Configuration example
+
+[source, json]
+.Minimal configuration
+----
+{
+  "configuration": {
+    "tenantId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+    "audience": "api://my-resource-application-client-id"
+  }
+}
+----
+
+[source, json]
+.Full configuration with EL and HTTP tuning
+----
+{
+  "configuration": {
+    "tenantId": "{#dictionary['azure']['tenantId']}",
+    "audience": "api://my-resource-application-client-id",
+    "userClaim": "oid",
+    "scopeSeparator": " ",
+    "http": {
+      "connectTimeout": 5000,
+      "readTimeout": 10000,
+      "idleTimeout": 0,
+      "keepAlive": true,
+      "keepAliveTimeout": 30000,
+      "maxConcurrentConnections": 20,
+      "useCompression": true,
+      "version": "HTTP_1_1",
+      "pipelining": false,
+      "followRedirects": false,
+      "propagateClientHost": false
+    },
+    "proxy": {
+      "enabled": false,
+      "useSystemProxy": false
+    },
+    "ssl": {
+      "hostnameVerifier": true,
+      "trustAll": false,
+      "trustStore": {
+        "type": ""
+      },
+      "keyStore": {
+        "type": ""
+      }
+    }
+  }
+}
+----

@@ -1,0 +1,38 @@
+{
+    "type": "object",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "properties": {
+        "tenantId": {
+            "title": "Tenant ID",
+            "description": "The Microsoft Entra ID tenant ID (also called Directory ID). Found in the Azure portal under Azure Active Directory > Properties. Supports EL",
+            "type": "string"
+        },
+        "audience": {
+            "title": "Audience",
+            "description": "Expected audience (aud claim) for incoming access tokens. In Entra ID this is the Application ID URI (e.g. api://{clientId}) or the client ID of your resource application. Validating the audience prevents token confusion attacks. Supports EL",
+            "type": "string"
+        },
+        "userClaim": {
+            "title": "User claim",
+            "description": "Claim field used to identify the end user in analytics logs. Use 'oid' (Object ID, default) for a stable tenant-wide identifier, or 'sub' for a per-application identifier. Supports EL",
+            "type": "string",
+            "default": "oid"
+        },
+        "scopeSeparator": {
+            "title": "Scope separator",
+            "description": "Separator used between scopes (default is a whitespace)",
+            "type": "string",
+            "default": " "
+        },
+        "http": {
+            "$ref": "#/gioExternalDefinitions/httpClientOptions"
+        },
+        "proxy": {
+            "$ref": "#/gioExternalDefinitions/httpProxyOptions"
+        },
+        "ssl": {
+            "$ref": "#/gioExternalDefinitions/sslOptions"
+        }
+    },
+    "required": ["tenantId", "audience"]
+}

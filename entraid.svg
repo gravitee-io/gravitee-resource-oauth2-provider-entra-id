@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <rect width="100" height="100" rx="12" fill="#0078D4"/>
+  <!-- Microsoft Entra ID "E" lettermark -->
+  <text x="50" y="72" font-family="Segoe UI, Arial, sans-serif" font-size="62" font-weight="700"
+        fill="white" text-anchor="middle">E</text>
+</svg>
