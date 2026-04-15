@@ -40,6 +40,7 @@ import io.gravitee.resource.oauth2.entraid.configuration.OAuth2EntraIdResourceCo
 import io.vertx.rxjava3.core.Vertx;
 import java.lang.reflect.Field;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.awaitility.Awaitility;
@@ -325,7 +326,7 @@ class OAuth2EntraIdResourceTest {
     void should_return_correct_authorization_server_in_metadata() throws Exception {
         resource.doStart();
 
-        OAuth2ResourceMetadata metadata = resource.getProtectedResourceMetadata("https://my-api.example.com");
+        OAuth2ResourceMetadata metadata = resource.getProtectedResourceMetadata("https://my-api.example.com", List.of());
         assertAll(
             () -> assertThat(metadata.protectedResourceUri()).isEqualTo("https://my-api.example.com"),
             () -> assertThat(metadata.authorizationServers()).hasSize(1),
@@ -335,6 +336,15 @@ class OAuth2EntraIdResourceTest {
                 ),
             () -> assertThat(metadata.scopesSupported()).isEmpty()
         );
+    }
+
+    @Test
+    void should_forward_scopes_supported_in_metadata() throws Exception {
+        resource.doStart();
+
+        List<String> scopes = List.of("openid", "profile", "email");
+        OAuth2ResourceMetadata metadata = resource.getProtectedResourceMetadata("https://my-api.example.com", scopes);
+        assertThat(metadata.scopesSupported()).containsExactlyElementsOf(scopes);
     }
 
     // -------------------------------------------------------------------------
