@@ -313,8 +313,8 @@ public class OAuth2EntraIdResource extends OAuth2Resource<OAuth2EntraIdResourceC
     }
 
     @Override
-    public OAuth2ResourceMetadata getProtectedResourceMetadata(String protectedResourceUri) {
-        return new OAuth2ResourceMetadata(protectedResourceUri, List.of(authorizationServerUrl), List.of());
+    public OAuth2ResourceMetadata getProtectedResourceMetadata(String protectedResourceUri, List<String> scopesSupported) {
+        return new OAuth2ResourceMetadata(protectedResourceUri, List.of(authorizationServerUrl), scopesSupported);
     }
 
     @Override
