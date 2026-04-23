@@ -267,13 +267,19 @@ public class OAuth2EntraIdResource extends OAuth2Resource<OAuth2EntraIdResourceC
             })
             .onSuccess(request ->
                 request
-                    .response(asyncResponse -> {
-                        if (asyncResponse.failed()) {
-                            logger.error(ERROR_GETTING_USERINFO, asyncResponse.cause());
-                            responseHandler.handle(new UserInfoResponse(asyncResponse.cause()));
-                        } else {
-                            final HttpClientResponse response = asyncResponse.result();
-                            response.bodyHandler(buffer -> {
+                    .send()
+                    .onFailure(event -> {
+                        logger.error(ERROR_GETTING_USERINFO, event);
+                        responseHandler.handle(new UserInfoResponse(event));
+                    })
+                    .onSuccess(response -> {
+                        response
+                            .body()
+                            .onFailure(event -> {
+                                logger.error(ERROR_GETTING_USERINFO, event);
+                                responseHandler.handle(new UserInfoResponse(event));
+                            })
+                            .onSuccess(buffer -> {
                                 logger.debug("Entra ID userinfo endpoint returned status {}", response.statusCode());
                                 if (response.statusCode() == HttpStatusCode.OK_200) {
                                     responseHandler.handle(new UserInfoResponse(true, buffer.toString()));
@@ -286,13 +292,7 @@ public class OAuth2EntraIdResource extends OAuth2Resource<OAuth2EntraIdResourceC
                                     responseHandler.handle(new UserInfoResponse(new OAuth2ResourceException(ERROR_GETTING_USERINFO)));
                                 }
                             });
-                        }
                     })
-                    .exceptionHandler(event -> {
-                        logger.error(ERROR_GETTING_USERINFO, event);
-                        responseHandler.handle(new UserInfoResponse(event));
-                    })
-                    .end()
             );
     }
 
