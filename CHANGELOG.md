@@ -1,3 +1,15 @@
+# [2.0.0-alpha.1](https://github.com/gravitee-io/gravitee-resource-oauth2-provider-entra-id/compare/1.0.1...2.0.0-alpha.1) (2026-04-29)
+
+
+### Features
+
+* upgrade to vertx 5 ([80eaa17](https://github.com/gravitee-io/gravitee-resource-oauth2-provider-entra-id/commit/80eaa1710f8e7fc9ea25bef6968c757628cb4963))
+
+
+### BREAKING CHANGES
+
+* upgrade to vertx 5.x
+
 ## [1.0.1](https://github.com/gravitee-io/gravitee-resource-oauth2-provider-entra-id/compare/1.0.0...1.0.1) (2026-04-16)
 
 
