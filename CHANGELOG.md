@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/gravitee-io/gravitee-resource-oauth2-provider-entra-id/compare/1.0.1...1.0.2) (2026-05-15)
+
+
+### Bug Fixes
+
+* JWKS resolution based on vertx to avoid thread blocked with Java IO ([#4](https://github.com/gravitee-io/gravitee-resource-oauth2-provider-entra-id/issues/4)) ([aee6aa8](https://github.com/gravitee-io/gravitee-resource-oauth2-provider-entra-id/commit/aee6aa8d3352b72e904258e4927fb820120c6b57))
+
 ## [1.0.1](https://github.com/gravitee-io/gravitee-resource-oauth2-provider-entra-id/compare/1.0.0...1.0.1) (2026-04-16)
 
 
