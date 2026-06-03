@@ -1,3 +1,10 @@
+# [2.0.0-alpha.2](https://github.com/gravitee-io/gravitee-resource-oauth2-provider-entra-id/compare/2.0.0-alpha.1...2.0.0-alpha.2) (2026-06-03)
+
+
+### Bug Fixes
+
+* bump apim dependency to 4.12.0-milestone.1 ([cdc62a7](https://github.com/gravitee-io/gravitee-resource-oauth2-provider-entra-id/commit/cdc62a728a51c22287f2f43b12ad8c4c24131172))
+
 # [2.0.0-alpha.1](https://github.com/gravitee-io/gravitee-resource-oauth2-provider-entra-id/compare/1.0.1...2.0.0-alpha.1) (2026-04-29)
 
 
