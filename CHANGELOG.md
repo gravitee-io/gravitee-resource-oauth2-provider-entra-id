@@ -1,3 +1,20 @@
+# [2.0.0](https://github.com/gravitee-io/gravitee-resource-oauth2-provider-entra-id/compare/1.0.2...2.0.0) (2026-06-24)
+
+
+### Bug Fixes
+
+* bump apim dependency to 4.12.0-milestone.1 ([66c8456](https://github.com/gravitee-io/gravitee-resource-oauth2-provider-entra-id/commit/66c8456f3be01a6f560dbd427f93c4f5eab39c13))
+
+
+### Features
+
+* upgrade to vertx 5 ([4012fb3](https://github.com/gravitee-io/gravitee-resource-oauth2-provider-entra-id/commit/4012fb3268927176c2e578d3cbe79d422bec4a84))
+
+
+### BREAKING CHANGES
+
+* upgrade to vertx 5.x
+
 ## [1.0.2](https://github.com/gravitee-io/gravitee-resource-oauth2-provider-entra-id/compare/1.0.1...1.0.2) (2026-05-15)
 
 
