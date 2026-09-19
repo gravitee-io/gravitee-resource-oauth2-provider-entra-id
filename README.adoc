@@ -22,13 +22,16 @@ made per request.
 
 Both Entra ID v1.0 and v2.0 token formats are supported.
 
-== Compatibility with APIM
+== Compatibility matrix
 
 |===
-|Plugin version | APIM version
+| Plugin version | APIM             | Java version
 
-|1.0 and upper  | 4.10.x to latest
+| 2.0 and upper  | 4.12.x to latest | 21
+| 1.0 and upper  | 4.10.x to 4.11.x | 21
 |===
+
+The *Java version* column is the bytecode level of the latest release of each line, which sets the minimum runtime able to load the artifact.
 
 == Configuration
 
