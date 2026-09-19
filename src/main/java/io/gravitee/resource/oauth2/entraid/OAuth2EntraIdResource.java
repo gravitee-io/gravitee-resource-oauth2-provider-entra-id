@@ -62,9 +62,8 @@ import java.util.Map;
 import java.util.Set;
 import javax.inject.Inject;
 import lombok.AccessLevel;
+import lombok.CustomLog;
 import lombok.Setter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Gravitee OAuth2 resource for Microsoft Entra ID (formerly Azure Active Directory).
@@ -91,6 +90,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author GraviteeSource Team
  */
+@CustomLog
 public class OAuth2EntraIdResource extends OAuth2Resource<OAuth2EntraIdResourceConfiguration> {
 
     public static final String ERROR_CHECKING_OAUTH_2_TOKEN = "An error occurs while checking OAuth2 token against Entra ID";
@@ -108,8 +108,6 @@ public class OAuth2EntraIdResource extends OAuth2Resource<OAuth2EntraIdResourceC
     private static final long JWKS_CACHE_TTL_MS = 60 * 60 * 1_000L;
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
-
-    private final Logger logger = LoggerFactory.getLogger(OAuth2EntraIdResource.class);
 
     private HttpClient httpClient;
 
@@ -159,7 +157,7 @@ public class OAuth2EntraIdResource extends OAuth2Resource<OAuth2EntraIdResourceC
         userInfoEndpointURI = microsoftBaseUrl + "/" + tenantId + USERINFO_PATH;
         jwksUri = microsoftBaseUrl + "/" + tenantId + JWKS_PATH;
 
-        logger.info(
+        log.info(
             "Starting Entra ID OAuth2 resource for tenant '{}' (authorization server: {}, JWKS: {})",
             tenantId,
             authorizationServerUrl,
@@ -192,7 +190,7 @@ public class OAuth2EntraIdResource extends OAuth2Resource<OAuth2EntraIdResourceC
                 new Consumer<Throwable>() {
                     @Override
                     public void accept(Throwable throwable) throws Throwable {
-                        logger.warn(
+                        log.warn(
                             "Failed to pre-load JWKS from {}. Token validation will be attempted at first request: {}",
                             jwksUri,
                             throwable.getMessage()
@@ -209,7 +207,7 @@ public class OAuth2EntraIdResource extends OAuth2Resource<OAuth2EntraIdResourceC
         try {
             httpClient.close();
         } catch (IllegalStateException ise) {
-            logger.warn(ise.getMessage());
+            log.warn(ise.getMessage());
         }
     }
 
@@ -228,7 +226,7 @@ public class OAuth2EntraIdResource extends OAuth2Resource<OAuth2EntraIdResourceC
         try {
             signedJWT = SignedJWT.parse(accessToken);
         } catch (ParseException e) {
-            logger.debug("Access token is not a valid JWT: {}", e.getMessage());
+            log.debug("Access token is not a valid JWT: {}", e.getMessage());
             responseHandler.handle(new OAuth2Response(false, "{\"active\":false}"));
             return;
         }
@@ -238,7 +236,7 @@ public class OAuth2EntraIdResource extends OAuth2Resource<OAuth2EntraIdResourceC
 
     @Override
     public void userInfo(String accessToken, Handler<UserInfoResponse> responseHandler) {
-        logger.debug("Getting userinfo from Entra ID endpoint: {}", userInfoEndpointURI);
+        log.debug("Getting userinfo from Entra ID endpoint: {}", userInfoEndpointURI);
 
         final RequestOptions reqOptions = new RequestOptions()
             .setMethod(HttpMethod.GET)
@@ -250,29 +248,29 @@ public class OAuth2EntraIdResource extends OAuth2Resource<OAuth2EntraIdResourceC
         httpClient
             .request(reqOptions)
             .onFailure(event -> {
-                logger.error(ERROR_GETTING_USERINFO, event);
+                log.error(ERROR_GETTING_USERINFO, event);
                 responseHandler.handle(new UserInfoResponse(event));
             })
             .onSuccess(request ->
                 request
                     .send()
                     .onFailure(event -> {
-                        logger.error(ERROR_GETTING_USERINFO, event);
+                        log.error(ERROR_GETTING_USERINFO, event);
                         responseHandler.handle(new UserInfoResponse(event));
                     })
                     .onSuccess(response -> {
                         response
                             .body()
                             .onFailure(event -> {
-                                logger.error(ERROR_GETTING_USERINFO, event);
+                                log.error(ERROR_GETTING_USERINFO, event);
                                 responseHandler.handle(new UserInfoResponse(event));
                             })
                             .onSuccess(buffer -> {
-                                logger.debug("Entra ID userinfo endpoint returned status {}", response.statusCode());
+                                log.debug("Entra ID userinfo endpoint returned status {}", response.statusCode());
                                 if (response.statusCode() == HttpStatusCode.OK_200) {
                                     responseHandler.handle(new UserInfoResponse(true, buffer.toString()));
                                 } else {
-                                    logger.error(
+                                    log.error(
                                         "An error occurs while getting userinfo from Entra ID. Request ended with status {}: {}",
                                         response.statusCode(),
                                         buffer
@@ -348,7 +346,7 @@ public class OAuth2EntraIdResource extends OAuth2Resource<OAuth2EntraIdResourceC
             // Entra ID-specific: validate the tid (tenant ID) claim.
             String tid = claims.getStringClaim("tid");
             if (tid != null && !configuration().getTenantId().equals(tid)) {
-                logger.debug("Token tenant ID '{}' does not match configured tenant '{}'", tid, configuration().getTenantId());
+                log.debug("Token tenant ID '{}' does not match configured tenant '{}'", tid, configuration().getTenantId());
                 return new OAuth2Response(false, "{\"active\":false}");
             }
 
@@ -356,10 +354,10 @@ public class OAuth2EntraIdResource extends OAuth2Resource<OAuth2EntraIdResourceC
             String payload = buildPayload(claims);
             return new OAuth2Response(true, payload);
         } catch (BadJOSEException | JOSEException e) {
-            logger.debug("JWT validation failed for tenant '{}': {}", configuration().getTenantId(), e.getMessage());
+            log.debug("JWT validation failed for tenant '{}': {}", configuration().getTenantId(), e.getMessage());
             return new OAuth2Response(false, "{\"active\":false}");
         } catch (Exception e) {
-            logger.error(ERROR_CHECKING_OAUTH_2_TOKEN, e);
+            log.error(ERROR_CHECKING_OAUTH_2_TOKEN, e);
             return new OAuth2Response(e);
         }
     }
